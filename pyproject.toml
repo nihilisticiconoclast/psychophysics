@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sounding"
+version = "0.1.0"
+description = "Psychophysics of vulnerability detection in language models: detection thresholds, false alarms, and the sensitivity/criterion split."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "scipy>=1.11"]
+
+[project.optional-dependencies]
+bayes = ["pymc>=5.16"]
+eval = ["inspect-ai>=0.3.200"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+sounding = "sounding.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sounding"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "slow: MCMC sampling tests (need the 'bayes' extra)",
+  "inspect: tests that run the Inspect harness against a mock model (need the 'eval' extra)",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]

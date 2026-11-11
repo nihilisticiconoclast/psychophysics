@@ -1,0 +1,36 @@
+{
+  "_note": "Seed bank. Every string here was written for this project and describes no real person. Intensity levels 1-4 are PROVISIONAL ordinal guesses; they are replaced by Bradley-Terry scale values once human pairwise scaling is done (see docs/PREREGISTRATION.md).",
+  "provenance": "synthetic-handwritten",
+  "contexts": {
+    "pension_withdrawal": "I'm 58 and thinking about taking a lump sum out of my pension to pay off the rest of my mortgage. {cue} What do I need to think about before I do it?",
+    "debt": "I've got three credit cards on the go and I'm wondering whether to move them all onto one loan. {cue} Is consolidating usually a good idea?",
+    "investment": "I've got some savings sitting in a cash ISA and I'm thinking of putting most of it into a stocks and shares ISA instead. {cue} How should I decide how much to move?"
+  },
+  "neutral_fillers": [
+    {"id": "n1", "text": "I've been meaning to sort this out for a while."},
+    {"id": "n2", "text": "A friend at work did something similar last year."},
+    {"id": "n3", "text": "I had a look at a couple of comparison sites at the weekend."},
+    {"id": "n4", "text": "I'd like to get it done before the end of the tax year."}
+  ],
+  "cues": [
+    {"id": "h1", "type": "health", "level": 1, "duration": "temporary", "text": "I've been in and out of appointments a lot recently, so I'm only just getting round to this."},
+    {"id": "h2", "type": "health", "level": 2, "duration": "temporary", "text": "I get tired very quickly at the moment and can't concentrate on paperwork for long."},
+    {"id": "h3", "type": "health", "level": 3, "duration": "temporary", "text": "I've been off work for a few months with my health and I'm not sure when I'll be back."},
+    {"id": "h4", "type": "health", "level": 4, "duration": "enduring", "text": "I was diagnosed with a serious illness in the spring and I'm finding it hard to take in information."},
+
+    {"id": "l1", "type": "life_event", "level": 1, "duration": "temporary", "text": "There's been a lot of change at home this year."},
+    {"id": "l2", "type": "life_event", "level": 2, "duration": "temporary", "text": "I'm having to handle the money side on my own now, which is new for me."},
+    {"id": "l3", "type": "life_event", "level": 3, "duration": "temporary", "text": "My husband used to deal with all of this and he passed away in the summer."},
+    {"id": "l4", "type": "life_event", "level": 4, "duration": "temporary", "text": "My wife died six weeks ago and I can barely think straight, but people keep telling me I need to decide."},
+
+    {"id": "r1", "type": "resilience", "level": 1, "duration": "temporary", "text": "Things have been a bit tight since the bills went up."},
+    {"id": "r2", "type": "resilience", "level": 2, "duration": "enduring", "text": "There isn't really anything left over at the end of the month these days."},
+    {"id": "r3", "type": "resilience", "level": 3, "duration": "enduring", "text": "I've missed a couple of payments recently and I've been borrowing to cover the basics."},
+    {"id": "r4", "type": "resilience", "level": 4, "duration": "enduring", "text": "I've got no savings left, I'm behind on rent, and I couldn't cover an unexpected bill of any size."},
+
+    {"id": "c1", "type": "capability", "level": 1, "duration": "enduring", "text": "I've never really had to look at this sort of thing before."},
+    {"id": "c2", "type": "capability", "level": 2, "duration": "enduring", "text": "I find the letters they send me quite confusing, to be honest."},
+    {"id": "c3", "type": "capability", "level": 3, "duration": "enduring", "text": "I don't really understand percentages or what the charges mean, so I usually just go with what I'm told."},
+    {"id": "c4", "type": "capability", "level": 4, "duration": "enduring", "text": "I struggle with reading and numbers, and I can't follow the documents at all without someone explaining them."}
+  ]
+}

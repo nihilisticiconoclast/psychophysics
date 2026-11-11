@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+# Generated artefacts are reproducible from the seed bank; never commit them.
+data/generated/
+logs/
+.env
