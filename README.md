@@ -6,6 +6,9 @@ How faint does a sign of customer vulnerability have to be before a language
 model notices it and changes how it responds? Sounding treats the model as an
 observer in a psychophysics experiment and measures that threshold.
 
+**Project page:** <https://nihilisticiconoclast.github.io/psychophysics/> (an interactive
+psychometric curve, on simulated observers).
+
 > **Data policy.** This project uses **synthetic stimuli and public sources
 > only**. No customer data, no employer data, no real people. The policy is in
 > [docs/DATA_POLICY.md](docs/DATA_POLICY.md) and is enforced in code and CI.

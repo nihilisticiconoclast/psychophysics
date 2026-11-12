@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sounding — the psychophysics of vulnerability detection</title>
+<meta name="description" content="How faint does a sign of customer vulnerability have to be before a language model notices it? A psychophysics experiment on synthetic data.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nihilisticiconoclast/cuddly-lamp@main/assets/tokens.css">
+<style>
+  /* page layout only — colour, type and edges all come from tokens.css */
+  html,body{overflow-x:clip}   /* the doodle bleeds into the gutter; never let it widen the page */
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:var(--rule);padding-bottom:16px;margin-bottom:clamp(28px,5vw,56px)}
+  .brand{display:flex;align-items:center;gap:.7rem}
+  .wordmark{font-family:var(--font-data);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--contour);line-height:1.3}
+  .masthead nav a{font-family:var(--font-data);font-size:.8rem}
+  h2{margin-top:.2em}
+  .status{font-family:var(--font-data);font-size:var(--step--1);border:1px solid var(--index);padding:.8rem 1rem;max-width:var(--measure);margin:1.6rem 0 0}
+  .status strong{letter-spacing:.06em;text-transform:uppercase}
+
+  .instrument{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(20px,4vw,48px);align-items:start;margin-top:1.6rem}
+  @media (max-width:820px){
+    .instrument{grid-template-columns:1fr}
+    .chart{position:sticky;top:0;z-index:1;background:var(--paper);padding:.5rem 0;border-bottom:var(--rule)}
+  }
+  .chart svg{width:100%;height:auto;display:block;overflow:visible}
+  .chart text{font-family:var(--font-data);font-size:13px;fill:var(--contour)}
+  .chart .axis-title{fill:var(--ink)}
+  .presets{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.2rem}
+  .presets .btn{font-size:.85rem;padding:.6rem .7rem}
+  .presets .btn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .control{margin:0 0 1rem}
+  .control label{display:flex;justify-content:space-between;gap:1rem;font-family:var(--font-data);font-size:var(--step--1)}
+  .control output{color:var(--ink);font-weight:600}
+  .control input[type=range]{width:100%;margin:.35rem 0 0;accent-color:var(--incident);min-height:28px}
+  .readout{display:grid;grid-template-columns:repeat(4,1fr);border-top:var(--rule);border-bottom:var(--rule);margin:1.4rem 0 0}
+  @media (max-width:820px){.readout{grid-template-columns:repeat(2,1fr)}}
+  .readout div{padding:.8rem .8rem .8rem 0}
+  .readout dt{font-family:var(--font-data);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--contour)}
+  .readout dd{margin:.15rem 0 0;font-family:var(--font-display);font-size:var(--step-2);line-height:1.1}
+  .readout small{display:block;font-family:var(--font-data);font-size:.76rem;color:var(--contour);margin-top:.2rem}
+  .verdict{font-family:var(--font-display);font-size:var(--step-1);line-height:1.3;max-width:var(--measure);margin:1.2rem 0 0}
+  .formula{font-family:var(--font-data);font-size:.92rem;line-height:1.9;overflow-x:auto;white-space:nowrap;border-left:1px solid var(--index);padding:.4rem 0 .4rem 1rem;margin:1.2rem 0}
+  dl.legend{max-width:var(--measure);margin:1rem 0}
+  dl.legend dt{font-family:var(--font-data);font-size:.9rem;font-weight:600;margin-top:.9rem}
+  dl.legend dd{margin:.15rem 0 0}
+  ol.questions{max-width:var(--measure);padding-left:1.2rem}
+  ol.questions li{margin-bottom:.7rem}
+  .note{color:var(--contour);font-family:var(--font-data);font-size:.82rem;margin-top:2.5rem}
+</style>
+</head>
+<body data-seed="sounding">
+  <main class="wrap">
+
+    <div class="masthead">
+      <div class="brand">
+        <span class="sig" id="sig"></span>
+        <span class="wordmark">Sounding<br>Psychophysics</span>
+      </div>
+      <nav><a href="https://github.com/nihilisticiconoclast/psychophysics">Repository</a></nav>
+    </div>
+
+    <p class="eyebrow">Evaluation · signal detection · synthetic data</p>
+    <h1>How faint a sign of vulnerability can a language model detect?</h1>
+    <p class="lede">A customer asking about their pension mentions, in passing,
+    that their husband used to handle the money. Sounding measures how subtle a
+    remark like that can be before a model notices it and changes how it
+    responds, by treating the model as the observer in a psychophysics
+    experiment.</p>
+
+    <p class="status"><strong>Status: simulation only.</strong> No real model
+    has been evaluated yet and nothing on this page is a result. The instrument
+    below runs on simulated observers whose behaviour is set by the sliders.</p>
+
+    <div class="doodle" id="doodle"></div>
+
+    <hr>
+
+    <h2>Two ways to look more careful</h2>
+    <p>Suppose a firm adds a line to its system prompt: take extra care with
+    vulnerable customers. Afterwards the model flags more of them. That could
+    mean it has become better at seeing faint cues. It could also mean it has
+    simply become more willing to say “vulnerable”, including to customers who
+    gave no sign of it. A count of flagged customers cannot tell these apart.
+    The psychometric function can, because the two changes move different
+    parts of the curve.</p>
+
+    <div class="instrument">
+      <div class="chart">
+        <svg id="chart" role="img" aria-labelledby="chart-title">
+          <title id="chart-title">Probability of detection against cue intensity, for a baseline observer and the observer set by the controls</title>
+        </svg>
+      </div>
+
+      <div>
+        <div class="presets" role="group" aria-label="Preset observers">
+          <button class="btn" type="button" data-preset="baseline" aria-pressed="true">Baseline</button>
+          <button class="btn" type="button" data-preset="perceptive" aria-pressed="false">More perceptive</button>
+          <button class="btn" type="button" data-preset="cautious" aria-pressed="false">More cautious</button>
+        </div>
+        <div class="control">
+          <label for="alpha"><span>Threshold α</span><output id="alpha-out"></output></label>
+          <input id="alpha" type="range" min="0.5" max="4.5" step="0.05" value="2.5">
+        </div>
+        <div class="control">
+          <label for="gamma"><span>False-alarm rate γ</span><output id="gamma-out"></output></label>
+          <input id="gamma" type="range" min="0" max="0.5" step="0.01" value="0.05">
+        </div>
+        <div class="control">
+          <label for="beta"><span>Slope β</span><output id="beta-out"></output></label>
+          <input id="beta" type="range" min="0.15" max="1.5" step="0.05" value="0.5">
+        </div>
+        <div class="control">
+          <label for="lam"><span>Lapse rate λ</span><output id="lam-out"></output></label>
+          <input id="lam" type="range" min="0" max="0.2" step="0.01" value="0.02">
+        </div>
+        <div class="control">
+          <label for="n"><span>Trials per point n</span><output id="n-out"></output></label>
+          <input id="n" type="range" min="10" max="400" step="10" value="60">
+        </div>
+        <button class="btn" type="button" id="resample">Draw a new sample</button>
+      </div>
+    </div>
+
+    <dl class="readout">
+      <div><dt>Hit rate</dt><dd id="r-hit"></dd><small id="r-hit-d"></small></div>
+      <div><dt>False alarms</dt><dd id="r-fa"></dd><small id="r-fa-d"></small></div>
+      <div><dt>Sensitivity d′</dt><dd id="r-d"></dd><small id="r-d-d"></small></div>
+      <div><dt>Criterion c</dt><dd id="r-c"></dd><small id="r-c-d"></small></div>
+    </dl>
+    <p class="verdict" id="verdict" aria-live="polite"></p>
+
+    <hr>
+
+    <h2>What you are looking at</h2>
+    <p>The horizontal axis is cue intensity: how strongly a remark signals
+    vulnerable circumstances, from the faintest at 1 to explicit at 4. The
+    vertical axis is the probability that the observer detects it. The curve
+    is the psychometric function:</p>
+
+    <p class="formula">P(detect | cue at intensity x) = γ + (1 − γ − λ) · logistic((x − α) / β)<br>P(detect | no cue) = γ</p>
+
+    <p>The dashed brown curve is the baseline observer and never moves. The
+    teal curve is the observer set by the controls. The red line marks its
+    threshold. Open circles are a simulated experiment: at each intensity the
+    observer is shown n messages, and the circle is the share it detected, with
+    a bar of one standard error either side. The leftmost circle is the catch
+    trials, messages with no cue at all.</p>
+
+    <dl class="legend">
+      <dt>Threshold α</dt>
+      <dd>The intensity at which detection is halfway up the curve. Lower is
+      better: the observer picks up fainter cues. This is the quantity the
+      project exists to measure.</dd>
+      <dt>False-alarm rate γ</dt>
+      <dd>How often the observer reports vulnerability when there is no cue.
+      It sets the floor of the curve. Raising it lifts every point, which looks
+      like improvement if you only count detections.</dd>
+      <dt>Slope β</dt>
+      <dd>How sharply detection rises around the threshold. A small value means
+      a crisp boundary between missed and noticed.</dd>
+      <dt>Lapse rate λ</dt>
+      <dd>How often even an unmissable cue is missed. It sets the ceiling.</dd>
+      <dt>Trials per point n</dt>
+      <dd>This changes nothing about the observer. It changes how precisely the
+      circles pin down the curve, which is what a power analysis decides.</dd>
+    </dl>
+
+    <p>The four readouts summarise the teal observer, with the change from
+    baseline beneath each. Hit rate is the detection probability averaged over
+    the four cue intensities. False alarms is γ. Sensitivity d′ is the distance
+    between the two after converting each to a z-score, and criterion c is
+    minus their average: negative c means an observer inclined to say
+    “vulnerable” either way.</p>
+
+    <p>Press <em>More perceptive</em> and the threshold falls while the floor
+    stays put, so d′ rises. Press <em>More cautious</em> and the floor rises
+    while the threshold stays put: more detections, but d′ falls, because the
+    extra detections are bought with false alarms.</p>
+
+    <h3>What is idealised</h3>
+    <p>Everything here is a simulation. Real models may not follow a logistic
+    curve, and finding out is part of the work. The 1 to 4 intensity scale is
+    provisional; in the experiment it is replaced by a scale built from human
+    pairwise judgements of which remark signals more. The d′ and c shown use
+    the equal-variance signal detection model on a hit rate pooled across
+    intensities, which is a coarse summary. The analysis itself fits the whole
+    curve with a hierarchical Bayesian model.</p>
+
+    <hr>
+
+    <h2>The four questions</h2>
+    <ol class="questions">
+      <li><strong>Threshold.</strong> How subtle a cue can each model detect,
+      for each of the four drivers of vulnerability in the Financial Conduct
+      Authority’s guidance: health, life events, resilience and capability?</li>
+      <li><strong>Sensitivity or caution.</strong> Does a system prompt asking
+      for care lower the threshold, or only raise the false-alarm rate?</li>
+      <li><strong>Knowing versus doing.</strong> Does a model that spots a cue
+      when asked outright also adapt its reply when nobody asks?</li>
+      <li><strong>Temporary versus enduring.</strong> Are temporary
+      circumstances harder to detect than lasting ones?</li>
+    </ol>
+
+    <h2>Synthetic and public data only</h2>
+    <p>Every customer message in the project is invented for it and describes
+    no real person. There is no customer data and no employer data. Categories
+    and definitions come from published regulatory guidance. The rule is
+    enforced in code: each stimulus carries a record of where it came from, a
+    guard rejects anything that is not synthetic or that resembles personal
+    data, and the check runs on every change to the repository.</p>
+
+    <div style="margin-top:1.8rem"><a class="btn" href="https://github.com/nihilisticiconoclast/psychophysics">Read the code and the pre-registration</a></div>
+
+    <p class="note">Sounding · simulation stage · no results yet.</p>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/gh/nihilisticiconoclast/cuddly-lamp@main/assets/tunnel-figure.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ── house signature ──────────────────────────────────────────────────────
+  if (window.TunnelFigure) {
+    document.getElementById("sig").innerHTML =
+      TunnelFigure.tunnelFigureSVG(null, { variant: "mark" });
+    var seed = document.body.dataset.seed || location.pathname || document.title;
+    var doodle = document.getElementById("doodle");
+    doodle.innerHTML = TunnelFigure.tunnelFigureSVG(seed, { variant: "doodle" });
+    TunnelFigure.placeDoodle(doodle);
+  }
+
+  // ── the model ────────────────────────────────────────────────────────────
+  var BASE = { alpha: 2.5, beta: 0.5, gamma: 0.05, lam: 0.02 };
+  var PRESETS = {
+    baseline: BASE,
+    perceptive: { alpha: 1.7, beta: 0.5, gamma: 0.05, lam: 0.02 },
+    cautious: { alpha: 2.5, beta: 0.5, gamma: 0.25, lam: 0.02 }
+  };
+  var LEVELS = [1, 2, 3, 4];
+
+  function pDetect(x, p) {
+    return p.gamma + (1 - p.gamma - p.lam) / (1 + Math.exp(-(x - p.alpha) / p.beta));
+  }
+
+  // Inverse normal CDF (Acklam's rational approximation).
+  function zscore(p) {
+    p = Math.min(0.999, Math.max(0.001, p));
+    var a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
+    var b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+    var c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+    var d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+    var q, r;
+    if (p < 0.02425) {
+      q = Math.sqrt(-2 * Math.log(p));
+      return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    }
+    if (p > 1 - 0.02425) {
+      q = Math.sqrt(-2 * Math.log(1 - p));
+      return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    }
+    q = p - 0.5; r = q * q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+  }
+
+  function summary(p) {
+    var hit = LEVELS.reduce(function (s, x) { return s + pDetect(x, p); }, 0) / LEVELS.length;
+    var zh = zscore(hit), zf = zscore(p.gamma);
+    return { hit: hit, fa: p.gamma, d: zh - zf, c: -0.5 * (zh + zf) };
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ── chart ────────────────────────────────────────────────────────────────
+  var W = 640, H = 420, M = { l: 58, r: 14, t: 16, b: 58 };
+  var chartEl = document.getElementById("chart");
+  function fit() {
+    W = Math.max(300, Math.min(640, Math.round(chartEl.parentNode.clientWidth)));
+    H = Math.round(W * (W < 480 ? 0.82 : 0.66));
+    chartEl.setAttribute("viewBox", "0 0 " + W + " " + H);
+  }
+  var X0 = 0, X1 = 5;
+  function sx(x) { return M.l + (x - X0) / (X1 - X0) * (W - M.l - M.r); }
+  function sy(y) { return H - M.b - y * (H - M.t - M.b); }
+  function path(p) {
+    var d = "";
+    for (var x = 0.5; x <= 5.0001; x += 0.05) d += (d ? "L" : "M") + sx(x).toFixed(1) + " " + sy(pDetect(x, p)).toFixed(1);
+    return d;
+  }
+  var hair = "color-mix(in srgb, var(--contour) 38%, transparent)";
+
+  function draw(p, n, sampleSeed) {
+    fit();
+    var s = "";
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (y) {
+      s += '<line x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + sy(y) + '" y2="' + sy(y) + '" stroke="' + hair + '"/>';
+      s += '<text x="' + (M.l - 8) + '" y="' + (sy(y) + 4) + '" text-anchor="end">' + y.toFixed(2) + '</text>';
+    });
+    s += '<text x="' + sx(0) + '" y="' + (H - M.b + 20) + '" text-anchor="middle">no cue</text>';
+    LEVELS.forEach(function (x) {
+      s += '<text x="' + sx(x) + '" y="' + (H - M.b + 20) + '" text-anchor="middle">' + x + '</text>';
+    });
+    s += '<text class="axis-title" x="' + ((M.l + W - M.r) / 2) + '" y="' + (H - 12) + '" text-anchor="middle">cue intensity (provisional)</text>';
+    s += '<text class="axis-title" transform="translate(14 ' + ((M.t + H - M.b) / 2) + ') rotate(-90)" text-anchor="middle">P(detect)</text>';
+
+    // baseline, then the false-alarm floor, then the live curve
+    s += '<path d="' + path(BASE) + '" fill="none" stroke="var(--contour)" stroke-width="1.5" stroke-dasharray="5 5"/>';
+    s += '<line x1="' + sx(0) + '" x2="' + sx(5) + '" y1="' + sy(p.gamma) + '" y2="' + sy(p.gamma) + '" stroke="var(--incident)" stroke-width="1" stroke-dasharray="2 4"/>';
+    s += '<path d="' + path(p) + '" fill="none" stroke="var(--incident)" stroke-width="2.5"/>';
+
+    // the threshold: the one red line on the page
+    var ya = sy(pDetect(p.alpha, p));
+    s += '<line x1="' + sx(p.alpha) + '" x2="' + sx(p.alpha) + '" y1="' + sy(0) + '" y2="' + ya + '" stroke="var(--route)" stroke-width="2"/>';
+    var anchor = p.alpha > 3.6 ? "end" : "start", dx = p.alpha > 3.6 ? -8 : 8;
+    s += '<text x="' + (sx(p.alpha) + dx) + '" y="' + (sy(0) - 8) + '" text-anchor="' + anchor + '" style="fill:var(--ink)">α = ' + p.alpha.toFixed(2) + '</text>';
+
+    // a simulated experiment: n trials at each point
+    var rng = mulberry32(sampleSeed);
+    [0].concat(LEVELS).forEach(function (x) {
+      var prob = x === 0 ? p.gamma : pDetect(x, p), k = 0;
+      for (var i = 0; i < n; i++) if (rng() < prob) k++;
+      var ph = k / n, se = Math.sqrt(Math.max(ph * (1 - ph), 0) / n);
+      var top = sy(Math.min(1, ph + se)), bot = sy(Math.max(0, ph - se));
+      s += '<line x1="' + sx(x) + '" x2="' + sx(x) + '" y1="' + top + '" y2="' + bot + '" stroke="var(--ink)" stroke-width="1"/>';
+      s += '<circle cx="' + sx(x) + '" cy="' + sy(ph) + '" r="5" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/>';
+    });
+    var title = document.getElementById("chart-title").outerHTML;
+    chartEl.innerHTML = title + s;
+  }
+
+  // ── controls ─────────────────────────────────────────────────────────────
+  var ids = ["alpha", "gamma", "beta", "lam", "n"], el = {}, sampleSeed = 1;
+  ids.forEach(function (id) { el[id] = document.getElementById(id); });
+  var base = summary(BASE);
+
+  function signed(v, dp) { return (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v).toFixed(dp); }
+  function set(id, text) { document.getElementById(id).textContent = text; }
+
+  function update() {
+    var p = { alpha: +el.alpha.value, gamma: +el.gamma.value, beta: +el.beta.value, lam: +el.lam.value };
+    var n = +el.n.value;
+    set("alpha-out", p.alpha.toFixed(2)); set("gamma-out", p.gamma.toFixed(2));
+    set("beta-out", p.beta.toFixed(2)); set("lam-out", p.lam.toFixed(2)); set("n-out", n);
+    draw(p, n, sampleSeed);
+
+    var s = summary(p);
+    set("r-hit", (s.hit * 100).toFixed(0) + "%"); set("r-hit-d", signed((s.hit - base.hit) * 100, 0) + " pts vs baseline");
+    set("r-fa", (s.fa * 100).toFixed(0) + "%"); set("r-fa-d", signed((s.fa - base.fa) * 100, 0) + " pts vs baseline");
+    set("r-d", s.d.toFixed(2)); set("r-d-d", signed(s.d - base.d, 2) + " vs baseline");
+    set("r-c", s.c.toFixed(2)); set("r-c-d", signed(s.c - base.c, 2) + " vs baseline");
+
+    var dA = p.alpha - BASE.alpha, dG = p.gamma - BASE.gamma, v;
+    var sharper = dA <= -0.1, duller = dA >= 0.1, jumpier = dG >= 0.03, calmer = dG <= -0.03;
+    if (sharper && !jumpier) v = "More perceptive: the threshold has fallen and false alarms have not risen.";
+    else if (jumpier && !sharper && !duller) v = "More cautious, not more perceptive: more detections, all of them paid for in false alarms.";
+    else if (sharper && jumpier) v = "Both moved: it sees fainter cues and it raises more false alarms. A count of flags would hide which did the work.";
+    else if (duller && jumpier) v = "Worse on both counts: it misses fainter cues and raises more false alarms.";
+    else if (duller) v = "Less perceptive: the threshold has risen, so fainter cues are now missed.";
+    else if (calmer) v = "Fewer false alarms, with the threshold unchanged.";
+    else v = "Same threshold and false-alarm rate as the baseline observer.";
+    set("verdict", v);
+
+    document.querySelectorAll("[data-preset]").forEach(function (b) {
+      var q = PRESETS[b.dataset.preset];
+      var on = ["alpha", "gamma", "beta", "lam"].every(function (k) { return Math.abs(q[k] - p[k]) < 1e-9; });
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  ids.forEach(function (id) { el[id].addEventListener("input", update); });
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var q = PRESETS[b.dataset.preset];
+      ["alpha", "gamma", "beta", "lam"].forEach(function (k) { el[k].value = q[k]; });
+      update();
+    });
+  });
+  document.getElementById("resample").addEventListener("click", function () { sampleSeed++; update(); });
+  var lastWidth = 0;
+  window.addEventListener("resize", function () {
+    var w = chartEl.parentNode.clientWidth;
+    if (w !== lastWidth) { lastWidth = w; update(); }
+  });
+  update();
+})();
+</script>
+</body>
+</html>
